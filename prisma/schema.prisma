@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DataTrust { OFFICIAL VERIFIED COMMUNITY DEMO }
+enum UserRole { STUDENT MODERATOR ADMIN }
+enum ResourceType { NOTE PYQ ASSIGNMENT TUTORIAL LAB BOOK VIDEO }
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      UserRole @default(STUDENT)
+  campusId  String?
+  branchId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  resources Resource[]
+}
+
+model Campus {
+  id       String @id @default(cuid())
+  name     String
+  code     String @unique
+  resources Resource[]
+}
+
+model Branch {
+  id       String @id @default(cuid())
+  name     String
+  code     String @unique
+  subjects Subject[]
+}
+
+model Subject {
+  id        String @id @default(cuid())
+  name      String
+  code      String @unique
+  semester  Int
+  branchId  String
+  branch    Branch @relation(fields: [branchId], references: [id])
+  resources Resource[]
+}
+
+model Resource {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  type        ResourceType
+  trust       DataTrust    @default(COMMUNITY)
+  sourceUrl   String?
+  subjectId   String?
+  campusId    String?
+  uploaderId  String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  subject     Subject?     @relation(fields: [subjectId], references: [id])
+  campus      Campus?      @relation(fields: [campusId], references: [id])
+  uploader    User?        @relation(fields: [uploaderId], references: [id])
+  @@index([subjectId, type])
+  @@index([trust])
+}
+
+model Company {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+  experiences PlacementExperience[]
+}
+
+model PlacementExperience {
+  id        String   @id @default(cuid())
+  companyId String
+  title     String
+  content   String
+  trust     DataTrust @default(COMMUNITY)
+  createdAt DateTime @default(now())
+  company   Company @relation(fields: [companyId], references: [id])
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  sourceUrl String?
+  trust     DataTrust @default(OFFICIAL)
+  publishedAt DateTime
+}
