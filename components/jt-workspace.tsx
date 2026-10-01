@@ -1,5 +1,6 @@
 import { BookOpen, BriefcaseBusiness, Building2, CalendarDays, Calculator, GraduationCap, Library, MapPin, ShieldCheck, Users, type LucideIcon } from 'lucide-react';
 import type { Section } from './jt-navigation';
+import { AcademicCalculators } from './academic-calculators';
 
 type WorkspaceSection = Exclude<Section, 'home'>;
 type WorkspaceCard = { title: string; body: string; icon: LucideIcon };
@@ -20,6 +21,7 @@ export function JTWorkspace({ section, query }: { section: WorkspaceSection; que
   return <section className="jt-page"><span className="jt-kicker">{page.eyebrow}</span><h1>{page.title}</h1><p className="jt-lead">{page.lead}</p>
     {normalizedQuery && <p role="status" className="jt-lead" style={{fontSize:13}}>Showing {cards.length} matching workspace item{cards.length === 1 ? '' : 's'}.</p>}
     {cards.length ? <div className="jt-grid jt-three">{cards.map(({title,body,icon:Icon})=><article className="jt-card" key={title}><Icon size={22}/><h3>{title}</h3><p>{body}</p><span className="jt-pill">Foundation</span></article>)}</div> : <div className="jt-card" role="status"><h3>No matching items</h3><p>Try a different search term.</p></div>}
+    {section === 'academics' && <AcademicCalculators />}
     <p className="jt-lead" style={{fontSize:13,marginTop:24}}>Prototype status: this workspace currently contains interface scaffolding, not live JIIT records. Official and student-submitted information will be labelled separately.</p>
   </section>;
 }
