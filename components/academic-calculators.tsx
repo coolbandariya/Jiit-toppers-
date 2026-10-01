@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { calculateAttendance, calculateSgpa } from '../lib/academic-calculations.mjs';
 
 export function AcademicCalculators() {
   const [held, setHeld] = useState('0');
@@ -8,29 +9,16 @@ export function AcademicCalculators() {
   const [target, setTarget] = useState('75');
   const [credits, setCredits] = useState('4,3,3,2');
   const [grades, setGrades] = useState('9,8,8,10');
-  const attendance = useMemo(() => {
-    const total = Number(held);
-    const present = Number(attended);
-    const goal = Number(target);
-    const valid = held.trim() !== '' && attended.trim() !== '' && target.trim() !== ''
-      && Number.isInteger(total) && total >= 0
-      && Number.isInteger(present) && present >= 0 && present <= total
-      && Number.isFinite(goal) && goal >= 0 && goal <= 100;
-    if (!valid) return { pct: null, needed: null, invalid: true };
-    const pct = total > 0 ? present / total * 100 : null;
-    const needed = goal === 100
-      ? (present === total ? 0 : null)
-      : Math.max(0, Math.ceil((goal * total - 100 * present) / (100 - goal)));
-    return { pct, needed, invalid: false };
-  }, [held, attended, target]);
+  const attendance = useMemo(
+    () => calculateAttendance({ held: held.trim() === '' ? Number.NaN : Number(held), attended: attended.trim() === '' ? Number.NaN : Number(attended), target: target.trim() === '' ? Number.NaN : Number(target) }),
+    [held, attended, target],
+  );
   const sgpa = useMemo(() => {
     if (!credits.trim() || !grades.trim()) return null;
-    const c = credits.split(',').map(v => Number(v.trim()));
-    const g = grades.split(',').map(v => Number(v.trim()));
-    if (c.length === 0 || c.length !== g.length
-      || c.some(v => !Number.isFinite(v) || v <= 0)
-      || g.some(v => !Number.isFinite(v) || v < 0 || v > 10)) return null;
-    return g.reduce((sum, grade, i) => sum + grade * c[i], 0) / c.reduce((sum, v) => sum + v, 0);
+    return calculateSgpa(
+      credits.split(',').map(value => Number(value.trim())),
+      grades.split(',').map(value => Number(value.trim())),
+    );
   }, [credits, grades]);
   return <section className="jt-calculators" aria-labelledby="academic-tools-title">
     <span className="jt-kicker">PERSONAL PLANNING TOOLS</span><h2 id="academic-tools-title">Academic calculators</h2>
@@ -38,9 +26,9 @@ export function AcademicCalculators() {
     <div className="jt-grid jt-two">
       <article className="jt-card"><h3>Attendance planner</h3><p>Estimate consecutive classes needed to reach your target.</p>
         <div className="jt-form-grid"><label>Classes held<input type="number" min="0" step="1" value={held} onChange={e => setHeld(e.target.value)} /></label><label>Classes attended<input type="number" min="0" step="1" value={attended} onChange={e => setAttended(e.target.value)} /></label><label>Target (%)<input type="number" min="0" max="100" value={target} onChange={e => setTarget(e.target.value)} /></label></div>
-        <p className="jt-result" aria-live="polite">{attendance.invalid ? 'Enter whole-number class counts and a target from 0 to 100.' : attendance.pct === null ? 'Enter classes held to calculate attendance.' : 'Current attendance: ' + attendance.pct.toFixed(1) + '%'}</p>
-        {!attendance.invalid && attendance.pct !== null && <p>{attendance.needed === null ? 'A 100% target requires attending every future class.' : attendance.needed === 0 ? 'You currently meet your target.' : 'Attend the next ' + attendance.needed + ' consecutive classes to reach your target.'}</p>}
-        {attendance.invalid && <p role="alert">Check that attended classes do not exceed classes held and all values are valid.</p>}
+        <p className="jt-result" aria-live="polite">{!attendance.valid ? 'Enter whole-number class counts and a target from 0 to 100.' : attendance.percentage === null ? 'Enter classes held to calculate attendance.' : 'Current attendance: ' + attendance.percentage.toFixed(1) + '%'}</p>
+        {attendance.valid && attendance.percentage !== null && <p>{attendance.classesNeeded === null ? 'A 100% target requires attending every future class.' : attendance.classesNeeded === 0 ? 'You currently meet your target.' : 'Attend the next ' + attendance.classesNeeded + ' consecutive classes to reach your target.'}</p>}
+        {!attendance.valid && <p role="alert">Check that attended classes do not exceed classes held and all values are valid.</p>}
       </article>
       <article className="jt-card"><h3>SGPA estimator</h3><p>Enter comma-separated credits and matching grade points.</p>
         <div className="jt-form-grid"><label>Course credits<input value={credits} onChange={e => setCredits(e.target.value)} /></label><label>Grade points<input value={grades} onChange={e => setGrades(e.target.value)} /></label></div>
