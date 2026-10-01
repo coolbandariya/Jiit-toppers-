@@ -17,7 +17,7 @@ export function JIITToppersApp() {
   return <div className="jt-shell">
     <JTNavigation section={section} query={query} onNavigate={navigate} onQueryChange={setQuery}/>
     <main className="jt-container">
-      {section === 'home' ? <JTHome onNavigate={navigate}/> : <JTWorkspace section={section}/>}
+      {section === 'home' ? <JTHome onNavigate={navigate}/> : <JTWorkspace section={section} query={query}/>}
     </main>
     <footer className="jt-footer"><div className="jt-container"><strong>JIIT TOPPERS</strong><span>Student-led information is distinct from official institutional sources.</span></div></footer>
   </div>;
