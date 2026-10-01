@@ -99,7 +99,46 @@ Publicly discoverable student-built references include:
 
 These demonstrate student workflows such as timetable access, portal convenience and campus updates. Their code, data, branding and content should not be copied without checking licences and permissions.
 
-The exact JIIT Pulse URL was not reliably identified during this audit. Its interface and feature set therefore remain unverified; provide its exact URL or screenshots for a genuine page-by-page comparison.
+### JIIT Pulse — live reference inspected 2026-10-01
+
+The user supplied a Google share link resolving to https://jiit-pulse.vercel.app/. The live site was opened in a browser session. The landing page identifies itself as JIITPulse and describes attendance, schedules and mess menus for Sector 62 and Sector 128. It displays a hostel Wi-Fi notice advising mobile data where campus Wi-Fi may be restricted.
+
+The site map exposed these paths: /, /62, /128 and /community. The browser inspection reached the campus timetable interfaces; the plain scraper rendered the client-side landing content for the deep links, so page-level observations below are from the interactive browser inspection rather than assuming the static scrape was complete.
+
+Observed shared timetable features:
+- Header actions: Support, Report Error, Settings and Profile.
+- Live-status panel with day-state/time.
+- Day selector for Sunday through Saturday.
+- Programme selectors, semester selectors and a batch dropdown.
+- Feed/grid view toggle.
+- Calendar action described as syncing to Apple or Google Calendar.
+- Timetable entries show time range, class type, subject, room and instructor; some entries show a shared batch.
+- Assignments card described as tracking deadlines and progress.
+- Bottom icon navigation, a standalone JIIT Pulse Community link and a floating “Open Pulse AI” action.
+
+Observed campus differences:
+- Sector 62 exposes a wider programme selector in the inspected state (B.Tech, M.Tech, BCA, BSc, BBA, B.Com, MBA, M.Com, MADBM, MCA and MSc) and semester choices 1, 3, 5 and 7. The inspected default batch was A1; the dropdown included multiple A/B/C/D/G/H batches. A sample Wednesday schedule displayed English, Basic Electronics, lunch, an English lab and Software Development Fundamentals-I.
+- Sector 128 exposed B.Tech, BCA and MCA in the inspected state, semester 1 and 3, and an Upload Timetable action. The inspected default batch was E1, with numerous E/F batches available. A sample Wednesday schedule displayed Physics-1, an English lab, lunch, English, Software Development Fundamentals-I and a Mathematics-1 tutorial.
+- The displayed timetable “Last Updated” value varied between observed renders (4 September 2026 and 14 September 2026). This should be treated as a freshness/consistency question, not as proof that the data is current.
+- The inspected sample schedules are UI content and should not be imported into JIIT Toppers as authoritative timetable data without source, permission and currentness checks.
+
+Browser inspection exposed no visible application error in the sampled campus views. This is not a full functional, security, accessibility or reliability test; button actions such as upload, calendar sync, profile, support and AI were not exhaustively exercised.
+
+#### Product implications for JIIT Toppers
+
+JIIT Pulse establishes a concrete student workflow reference: campus selection → day/programme/semester/batch filters → timetable feed/grid → calendar action, with adjacent assignments, reporting, profile and AI entry points.
+
+JIIT Toppers should use this as a workflow benchmark, not copy its branding or assume access to its underlying data. Specific opportunities:
+1. Make campus (62/128), programme, semester, batch and weekday first-class timetable dimensions.
+2. Support both feed and grid views and accessible class-detail panels.
+3. Treat timetable upload as a contribution workflow with file validation, provenance, versioning, review and rollback—not as an unverified overwrite.
+4. Provide calendar export only from a selected, validated timetable and clearly identify timezone and update version.
+5. Show a visible “last checked/updated” timestamp and warn when data is stale or source provenance is missing.
+6. Keep assignment tracking separate from institutional assignment systems unless an authorised integration exists.
+7. Make report-error, profile, settings and AI actions real and permission-aware before presenting them as available features.
+8. Keep any AI answers grounded in source-linked, access-filtered data; never imply that a floating AI button means the assistant has reliable campus data.
+
+The exact live site is now identified and its visible workflow has been inspected. The above does not establish its backend design, data licence, security posture or the correctness of the displayed schedule.
 
 ## Product recommendations
 
