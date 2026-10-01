@@ -11,7 +11,8 @@ This document is the release-gate source of truth. A feature is not complete mer
 - Server-only Prisma singleton and a database health endpoint that reports degraded status without exposing connection details.
 - Zod resource-submission shape validation, including HTTP(S)-only source URLs and rejection of unknown fields.
 - Accessible not-found, route error and root error fallbacks; keyboard focus indicators and reduced-motion handling.
-- GitHub Actions checks for lint, TypeScript, Prisma schema validation and production build.
+- GitHub Actions checks for academic unit tests, lint, TypeScript, Prisma schema validation and production build.
+- Academic attendance and SGPA calculators are integrated into the Academics workspace. Calculation logic is isolated in dependency-free utilities and covered by Node's built-in test runner.
 
 ## Not implemented / release blockers
 
@@ -22,15 +23,15 @@ This document is the release-gate source of truth. A feature is not complete mer
 - No database row-level security policies. Prisma models alone do not enforce authorization.
 - No resource upload route, private object storage, file-size/type enforcement, malware scanning, signed download flow, moderation or takedown.
 - No live JIIT curriculum, exam schedule, timetable, campus service or placement data source.
-- No functional attendance/grade tools or verified inputs in the current interface.
+- Attendance and SGPA planning tools are functional for user-entered estimates; CGPA, persistence and institution-specific grading validation remain outstanding.
 - Search filters only the currently displayed prototype cards; it is not a server-backed global search.
-- No end-to-end tests, accessibility audit, dependency vulnerability gate, runtime monitoring or verified production deployment.
+- Unit tests currently cover academic calculation utilities only. No end-to-end tests, full accessibility audit, dependency vulnerability gate, runtime monitoring or verified production deployment.
 - No verified production canonical domain; do not publish a fabricated sitemap URL.
 
 ## Release gates
 
 ### Foundation
-- Commit a lockfile and use npm ci in CI.
+- Commit a lockfile and use npm ci in CI (currently outstanding; CI still uses npm install).
 - Run lint, typecheck, Prisma validation, tests and next build from a clean checkout.
 - Keep data access in server-only modules and presentation components focused.
 - Provide loading, empty, error and unavailable states for every live-data route.
@@ -67,7 +68,8 @@ The repository can be improved without secrets, but live services cannot be hone
 
 ## Next implementation slice
 
-1. Make dependency installation reproducible with a lockfile.
-2. Finalize migrations and test database constraints.
-3. Select and configure authentication, then add role-safe access.
-4. Implement a small, end-to-end Study Vault flow before adding more workspace cards.
+1. Generate and commit a lockfile in a Node-enabled environment, then switch CI to npm ci.
+2. Run CI and resolve any test/build failures.
+3. Finalize migrations and test database constraints.
+4. Select and configure authentication, then add role-safe access.
+5. Implement a small, end-to-end Study Vault flow before adding more workspace cards.
