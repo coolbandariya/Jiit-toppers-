@@ -79,6 +79,7 @@ model User {
 
   @@index([campusId, branchId, admissionYear])
   @@index([role])
+  @@index([branchId])
 }
 
 model Campus {
@@ -156,6 +157,7 @@ model CurriculumSubject {
 
   @@unique([curriculumId, subjectId])
   @@index([curriculumId, semester])
+  @@index([subjectId])
 }
 
 model Resource {
@@ -191,6 +193,7 @@ model Resource {
   @@index([trust, status])
   @@index([campusId, createdAt])
   @@index([uploaderId, createdAt])
+  @@index([reviewerId])
 }
 
 model Exam {
@@ -243,6 +246,7 @@ model PlacementExperience {
   author  User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([companyId, isApproved, createdAt])
+  @@index([authorId])
 }
 
 model Announcement {
@@ -295,6 +299,7 @@ model Discussion {
   replies DiscussionReply[]
 
   @@index([isHidden, createdAt])
+  @@index([authorId])
 }
 
 model DiscussionReply {
@@ -310,6 +315,7 @@ model DiscussionReply {
   author     User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([discussionId, isHidden, createdAt])
+  @@index([authorId])
 }
 
 model AuditEvent {
