@@ -1,59 +1,73 @@
 # V3 Foundation: implementation status
 
-## Delivered in this upgrade
+This document is the release-gate source of truth. A feature is not complete merely because its card or navigation item exists.
 
-- Split the former all-in-one client component into navigation, home and workspace components.
-- Removed illustrative attendance, SGPA and exam-count figures that could be mistaken for real student data.
-- Replaced hard-coded sample course, resource and recruiter records in the visible prototype with explicit workspace scaffolding.
-- Added accessible labels/current-page state to primary navigation.
-- Updated the README to distinguish implemented UI from planned services.
+## Implemented in the repository
 
-## Not yet implemented
+- Next.js App Router application with separated navigation, home and workspace components.
+- Prototype workspace cards for academics, Study Vault, exams, career, campus and community.
+- Explicit prototype messaging; no fabricated live student data is shown in the current UI.
+- Prisma PostgreSQL domain schema covering users, campuses, branches, curricula, subjects, resources, exams, companies, placement experiences, announcements, events, discussions and audit events.
+- Server-only Prisma singleton and a database health endpoint that reports degraded status without exposing connection details.
+- Zod resource-submission shape validation, including HTTP(S)-only source URLs and rejection of unknown fields.
+- Accessible not-found, route error and root error fallbacks; keyboard focus indicators and reduced-motion handling.
+- GitHub Actions checks for lint, TypeScript, Prisma schema validation and production build.
 
-- Database connection, schema migrations and seed strategy
-- Sign-in, session handling, profile onboarding and role-based access
-- Live JIIT curriculum, timetable, announcements or student records
-- Resource upload, object storage, malware scanning, moderation and takedown
-- Attendance/grade integrations or verified calculation inputs
-- Campus data ingestion and freshness monitoring
-- Placement record verification and community moderation
-- Search indexing, notifications and AI/RAG
-- End-to-end tests, security review and deployment verification
+## Not implemented / release blockers
 
-## Required acceptance gates
+- No committed package lockfile; CI currently uses npm install, so dependency resolution is not fully reproducible.
+- No committed Prisma migrations or tested migration/rollback process.
+- No configured production database, seed/import pipeline or staging environment.
+- No authentication, session lifecycle, onboarding or server-side role authorization.
+- No database row-level security policies. Prisma models alone do not enforce authorization.
+- No resource upload route, private object storage, file-size/type enforcement, malware scanning, signed download flow, moderation or takedown.
+- No live JIIT curriculum, exam schedule, timetable, campus service or placement data source.
+- No functional attendance/grade tools or verified inputs in the current interface.
+- Search filters only the currently displayed prototype cards; it is not a server-backed global search.
+- No end-to-end tests, accessibility audit, dependency vulnerability gate, runtime monitoring or verified production deployment.
+- No verified production canonical domain; do not publish a fabricated sitemap URL.
 
-### Application foundation
-- A clean install and production build succeed from a committed lockfile.
-- ESLint and TypeScript checks run in CI.
-- Components remain focused; data access is not embedded in presentation components.
-- Loading, empty, error and unavailable states are designed for every data-backed route.
+## Release gates
+
+### Foundation
+- Commit a lockfile and use npm ci in CI.
+- Run lint, typecheck, Prisma validation, tests and next build from a clean checkout.
+- Keep data access in server-only modules and presentation components focused.
+- Provide loading, empty, error and unavailable states for every live-data route.
 
 ### Data and trust
-- Every externally sourced record has a source URL, source type and checked/published timestamp where applicable.
-- Community submissions are never styled or described as official.
-- Demo fixtures are isolated from production data and visibly labelled.
-- Curriculum records are scoped by programme, branch, admission batch and curriculum version.
+- Add versioned migrations and test them against a disposable/staging PostgreSQL database.
+- Store provenance, source URL and last-checked time for externally sourced records.
+- Keep OFFICIAL, VERIFIED, COMMUNITY and DEMO distinct in both data and UI.
+- Do not seed production with fabricated people, student records, recruiter outcomes or institutional claims.
 
 ### Security and privacy
-- All private records are protected by server-side authorization and database row-level policies.
-- User-controlled input is validated at the boundary.
-- Uploads use private storage by default and short-lived access URLs.
-- Secrets are server-only; no service-role key is shipped to the browser.
-- Audit events are recorded for privileged changes.
+- Add authentication before accepting personal records or contributions.
+- Enforce authorization on the server and in database policies; never trust a client-supplied role or owner ID.
+- Validate all inputs at the boundary and apply request size/rate limits.
+- Keep uploads private by default; validate actual file content, use short-lived download URLs and provide moderation/takedown.
+- Keep secrets server-only and record privileged changes in an audit trail.
 
-### Release
-- CI passes on a clean checkout.
-- Migration deployment is tested against a staging database.
-- Production environment variables and rollback procedures are documented.
-- Accessibility, mobile layout, performance and error monitoring are checked before launch.
+### Product acceptance
+- Make Study Vault browse/search/filter functional against approved resources.
+- Implement student-owned attendance and grade calculators with explicit assumptions; do not imply institutional integration.
+- Add sourced academic, exam and campus records with freshness labels.
+- Add moderated placement and community contributions only after identity and permissions are in place.
+- Defer AI answers until retrieval is grounded in approved, source-attributed records.
 
-## Architecture direction
+### Release and operations
+- Configure preview/staging/production environments and least-privilege secrets.
+- Verify database region, migration deployment, health checks, logs, alerting and rollback.
+- Test mobile layouts, keyboard navigation, screen-reader labels, contrast and production performance.
+- Confirm domain and canonical metadata before enabling a sitemap or search indexing.
 
-Keep route components thin. Prefer server components for data fetching and static composition; isolate browser state and event handlers in small client components. Put domain types and validation in `lib/`, data access behind server-only modules, and schema changes in committed migrations. This follows the Next.js App Router's server/client component model.
+## External setup required
+
+The repository can be improved without secrets, but live services cannot be honestly activated without owner-controlled configuration. Required setup includes a PostgreSQL project and connection string, an authentication provider decision, storage bucket and policies, approved JIIT data sources/permissions, and Vercel environment configuration. Add secrets directly to the relevant provider dashboards, never to chat or committed files.
 
 ## Next implementation slice
 
-1. Add a reproducible package lock and enforce `npm ci` in CI.
-2. Validate lint and build in a clean environment.
-3. Finalise the database schema and initial migration before wiring UI to live records.
-4. Add authentication and authorization before storing personal or private student data.
+1. Make dependency installation reproducible with a lockfile.
+2. Finalize migrations and test database constraints.
+3. Select and configure authentication, then add role-safe access.
+4. Implement a small, end-to-end Study Vault flow before adding more workspace cards.
