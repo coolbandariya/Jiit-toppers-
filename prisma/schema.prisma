@@ -7,87 +7,322 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum DataTrust { OFFICIAL VERIFIED COMMUNITY DEMO }
-enum UserRole { STUDENT MODERATOR ADMIN }
-enum ResourceType { NOTE PYQ ASSIGNMENT TUTORIAL LAB BOOK VIDEO }
+enum DataTrust {
+  OFFICIAL
+  VERIFIED
+  COMMUNITY
+  DEMO
+}
+
+enum UserRole {
+  STUDENT
+  MODERATOR
+  ADMIN
+}
+
+enum ResourceType {
+  NOTE
+  PYQ
+  ASSIGNMENT
+  TUTORIAL
+  LAB
+  BOOK
+  VIDEO
+  CHEAT_SHEET
+  OTHER
+}
+
+enum ResourceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REMOVED
+}
+
+enum ExamType {
+  T1
+  T2
+  T3
+  MIDTERM
+  END_SEM
+  QUIZ
+  LAB
+  OTHER
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  role      UserRole @default(STUDENT)
-  campusId  String?
-  branchId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  resources Resource[]
+  id             String   @id @default(cuid())
+  authProviderId String?  @unique
+  email          String   @unique
+  name           String?
+  role           UserRole @default(STUDENT)
+  campusId       String?
+  branchId       String?
+  admissionYear  Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  campus             Campus?                @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  branch             Branch?                @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  resources          Resource[]             @relation("ResourceUploader")
+  reviewedResources  Resource[]             @relation("ResourceReviewer")
+  placementExperiences PlacementExperience[]
+  discussions        Discussion[]
+  discussionReplies  DiscussionReply[]
+  auditEvents        AuditEvent[]           @relation("AuditActor")
+
+  @@index([campusId, branchId, admissionYear])
+  @@index([role])
 }
 
 model Campus {
-  id       String @id @default(cuid())
-  name     String
-  code     String @unique
-  resources Resource[]
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users         User[]
+  resources     Resource[]
+  announcements Announcement[]
+  events        CampusEvent[]
 }
 
 model Branch {
-  id       String @id @default(cuid())
-  name     String
-  code     String @unique
-  subjects Subject[]
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users       User[]
+  curricula   Curriculum[]
+}
+
+model Curriculum {
+  id             String   @id @default(cuid())
+  name           String
+  admissionYear  Int
+  programme      String   @default("B.Tech")
+  branchId       String
+  version        String
+  sourceUrl      String?
+  sourceCheckedAt DateTime?
+  trust          DataTrust @default(COMMUNITY)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  branch   Branch            @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  subjects CurriculumSubject[]
+
+  @@unique([branchId, admissionYear, version])
+  @@index([admissionYear, branchId])
 }
 
 model Subject {
-  id        String @id @default(cuid())
-  name      String
-  code      String @unique
-  semester  Int
-  branchId  String
-  branch    Branch @relation(fields: [branchId], references: [id])
-  resources Resource[]
+  id          String   @id @default(cuid())
+  name        String
+  code        String
+  description String?
+  credits     Decimal? @db.Decimal(4, 1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  curriculumLinks CurriculumSubject[]
+  resources       Resource[]
+  exams           Exam[]
+
+  @@index([code])
+  @@index([name])
+}
+
+model CurriculumSubject {
+  id           String @id @default(cuid())
+  curriculumId String
+  subjectId    String
+  semester     Int
+  isElective   Boolean @default(false)
+
+  curriculum Curriculum @relation(fields: [curriculumId], references: [id], onDelete: Cascade)
+  subject    Subject    @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  @@unique([curriculumId, subjectId])
+  @@index([curriculumId, semester])
 }
 
 model Resource {
-  id          String       @id @default(cuid())
-  title       String
-  description String?
-  type        ResourceType
-  trust       DataTrust    @default(COMMUNITY)
-  sourceUrl   String?
-  subjectId   String?
-  campusId    String?
-  uploaderId  String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  subject     Subject?     @relation(fields: [subjectId], references: [id])
-  campus      Campus?      @relation(fields: [campusId], references: [id])
-  uploader    User?        @relation(fields: [uploaderId], references: [id])
-  @@index([subjectId, type])
-  @@index([trust])
+  id             String         @id @default(cuid())
+  title          String
+  description    String?
+  type           ResourceType
+  status         ResourceStatus @default(PENDING)
+  trust          DataTrust      @default(COMMUNITY)
+  sourceUrl      String?
+  storageKey     String?
+  originalName   String?
+  mimeType       String?
+  sizeBytes      BigInt?
+  academicYear   Int?
+  examType       ExamType?
+  subjectId      String?
+  campusId       String?
+  uploaderId     String?
+  reviewerId     String?
+  reviewedAt     DateTime?
+  rejectionNote  String?
+  sourceCheckedAt DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  subject  Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  campus   Campus?  @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  uploader User?    @relation("ResourceUploader", fields: [uploaderId], references: [id], onDelete: SetNull)
+  reviewer User?    @relation("ResourceReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([subjectId, type, status])
+  @@index([trust, status])
+  @@index([campusId, createdAt])
+  @@index([uploaderId, createdAt])
+}
+
+model Exam {
+  id             String   @id @default(cuid())
+  title          String
+  type           ExamType
+  startsAt       DateTime?
+  endsAt         DateTime?
+  room           String?
+  syllabus       String?
+  sourceUrl      String?
+  sourceCheckedAt DateTime?
+  trust          DataTrust @default(COMMUNITY)
+  subjectId      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  subject Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+
+  @@index([startsAt, type])
+  @@index([subjectId, startsAt])
 }
 
 model Company {
-  id          String @id @default(cuid())
-  name        String @unique
+  id          String   @id @default(cuid())
+  name        String   @unique
+  websiteUrl  String?
   description String?
+  sourceUrl   String?
+  sourceCheckedAt DateTime?
+  trust       DataTrust @default(COMMUNITY)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   experiences PlacementExperience[]
 }
 
 model PlacementExperience {
-  id        String   @id @default(cuid())
-  companyId String
-  title     String
-  content   String
-  trust     DataTrust @default(COMMUNITY)
-  createdAt DateTime @default(now())
-  company   Company @relation(fields: [companyId], references: [id])
+  id          String   @id @default(cuid())
+  companyId   String
+  authorId    String?
+  title       String
+  content     String
+  trust       DataTrust @default(COMMUNITY)
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  author  User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([companyId, isApproved, createdAt])
 }
 
 model Announcement {
+  id             String   @id @default(cuid())
+  title          String
+  content        String
+  sourceUrl      String?
+  sourceCheckedAt DateTime?
+  trust          DataTrust @default(OFFICIAL)
+  status         AnnouncementStatus @default(DRAFT)
+  publishedAt    DateTime?
+  campusId       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  campus Campus? @relation(fields: [campusId], references: [id], onDelete: SetNull)
+
+  @@index([status, publishedAt])
+  @@index([campusId, publishedAt])
+}
+
+model CampusEvent {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startsAt    DateTime?
+  endsAt      DateTime?
+  venue       String?
+  sourceUrl   String?
+  trust       DataTrust @default(COMMUNITY)
+  campusId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  campus Campus? @relation(fields: [campusId], references: [id], onDelete: SetNull)
+
+  @@index([campusId, startsAt])
+}
+
+model Discussion {
   id        String   @id @default(cuid())
   title     String
-  content   String
-  sourceUrl String?
-  trust     DataTrust @default(OFFICIAL)
-  publishedAt DateTime
+  body      String
+  authorId  String?
+  isHidden  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author  User?             @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  replies DiscussionReply[]
+
+  @@index([isHidden, createdAt])
+}
+
+model DiscussionReply {
+  id           String   @id @default(cuid())
+  discussionId String
+  authorId     String?
+  body         String
+  isHidden     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  discussion Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  author     User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([discussionId, isHidden, createdAt])
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId, createdAt])
+  @@index([actorId, createdAt])
 }
