@@ -26,7 +26,7 @@ JIIT Toppers brings academic discovery, study resources, exam preparation, campu
 | Campus | Sector 62 / Sector 128 information and utilities | UI scaffold |
 | Community | Discussions, teams, clubs and events | UI scaffold |
 
-See [the feature map](docs/FEATURE_MAP.md) and [V3 foundation status](docs/V3_FOUNDATION.md) for the implementation plan and acceptance criteria.
+See [the feature map](docs/FEATURE_MAP.md), [V3 foundation status](docs/V3_FOUNDATION.md), and [research and code audit](docs/RESEARCH_AND_CODE_AUDIT_2026-10-01.md) for the implementation plan, audit findings and acceptance criteria.
 
 ## Technology
 
