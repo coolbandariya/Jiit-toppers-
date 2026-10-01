@@ -4,7 +4,7 @@
 
 JIIT Toppers brings academic discovery, study resources, exam preparation, campus information, career preparation and student collaboration into one coherent experience. It is designed to complement—not replace—the official JIIT student systems.
 
-> **Current status:** V3 foundation work. The current website is an interface prototype. It does not yet connect to a production database, JIIT student records, authentication, or live campus services. Any sample or placeholder content must not be treated as official.
+> **Current status:** V3 foundation work. The website remains a foundation prototype. The Academics workspace includes local attendance and SGPA estimators, but there is no production database, authentication, JIIT student-record integration, or live campus service. Any sample or placeholder content must not be treated as official.
 
 ## Product principles
 
@@ -19,7 +19,7 @@ JIIT Toppers brings academic discovery, study resources, exam preparation, campu
 | Workspace | Purpose | Current implementation |
 | --- | --- | --- |
 | Home | Entry point and shortcuts | UI scaffold |
-| Academics | Programme, curriculum, courses and academic tools | UI scaffold |
+| Academics | Programme, curriculum, courses and academic tools | UI scaffold plus local attendance and SGPA estimators |
 | Study Vault | Notes, PYQs, assignments, tutorials and labs | UI scaffold |
 | Exam Center | Schedules, preparation and past-paper history | UI scaffold |
 | Career | Recruiter information and student experiences | UI scaffold |
@@ -34,7 +34,7 @@ See [the feature map](docs/FEATURE_MAP.md) and [V3 foundation status](docs/V3_FO
 - TypeScript
 - CSS design system
 - Prisma schema targeting PostgreSQL
-- GitHub Actions for CI
+- GitHub Actions for CI (unit tests, lint, typecheck, Prisma validation and build)
 
 The application currently uses a lightweight client-side prototype. Database, authentication, storage, moderation and external integrations are future implementation work—not active services.
 
@@ -52,7 +52,10 @@ Open http://localhost:3000.
 Available scripts:
 
 - `npm run dev` — local development server
+- `npm run test` — dependency-free unit tests for academic calculations
 - `npm run lint` — ESLint
+- `npm run typecheck` — TypeScript checks
+- `npm run db:validate` — Prisma schema validation
 - `npm run build` — production compilation
 
 ## Data and contribution policy
