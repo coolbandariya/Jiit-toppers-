@@ -18,7 +18,7 @@ test('attendance rejects invalid counts and targets', () => {
   }
 });
 test('SGPA uses credit-weighted grade points', () => {
-  assert.equal(calculateSgpa([4, 3, 3, 2], [9, 8, 8, 10]), 8.583333333333334);
+  assert.equal(calculateSgpa([4, 3, 3, 2], [9, 8, 8, 10]), 8.666666666666666);
 });
 test('SGPA rejects mismatched, empty, or invalid inputs', () => {
   assert.equal(calculateSgpa([], []), null);
